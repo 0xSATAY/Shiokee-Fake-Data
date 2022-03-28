@@ -95,8 +95,8 @@ def create_dummy_feedback(commit):
         for i in range(len(products_in_orders)):
             try:
                 text = " ".join(random.sample(lorem_ipsum, 6))
-                date = products_in_orders[i][3] + datetime.timedelta(days=random.randint(1,30))
-                cursor.execute(f"insert into Feedback(UID, OPID, Comment, DateTime, RATING) values ('{random.randint(1,uid_count)}','{random.choice(products_in_orders)[0]}','{text}','{date}','{random.choice(rating)}')")
+                date = products_in_orders[i][3] + datetime.timedelta(days=random.randint(1,30)) #if random.randint(1,10) < 4 and products_in_orders[i][3] < datetime.datetime.strptime(random_date("20210801 00:00:00", "20210801 00:00:01", random.random()), '%Y%m%d %H:%M:%S')else datetime.datetime.strptime(random_date("20210801 00:00:00", "20210801 00:00:01", random.random()), '%Y%m%d %H:%M:%S') + datetime.timedelta(days=random.randint(1,30))
+                cursor.execute(f"insert into Feedback(UID, OPID, Comment, DateTime, RATING) values ('{random.randint(1,uid_count)}','{products_in_orders[i][0]}','{text}','{date}','{random.choice(rating)}')")
             except Exception as e:
                 print(e)
         cursor.commit()
@@ -108,10 +108,10 @@ def create_dummy_orders(commit):
     uid_count = list(cursor.execute("select COUNT(*) from Users"))[0][0]
     if commit:
         start = time.time()
-        for i in range(2000):
+        for i in range(20000):
             try:
                 address = real_random_address_by_state("CA")["address1"]
-                r_date = random_date("20210101 00:00:00", "20220101 00:00:00", random.random())
+                r_date = random_date("20210101 00:00:00", "20220101 00:00:00", random.random()) if random.randint(1,10) < 3 else random_date("20210801 00:00:00", "20210801 00:00:01", random.random())
                 cursor.execute(f"insert into Orders(DateTime, ShippingAddress, ShippingCost, UID) values ('{r_date}', '{address}', '{random.randint(0,100)}','{random.randint(1,uid_count)}')")
             except Exception as e:
                 print("ERROR: ", end="")
@@ -192,6 +192,7 @@ def create_dummy_productsinorders(commit):
                 order_selected = orders[i]
                 order_date = order_selected[1]
                 delivery_date = order_date + datetime.timedelta(days=random.randint(1,30))
+                print(f"{order_date} {delivery_date}")
                 status = ["Being processed", "Shipped", "Delivered", "Returned"]
                 cursor.execute(f"insert into ProductsInOrders( OPrice, OQuantity, DeliveryDate, Status, PName, Sname, OID) values ('{random.randint(1000,2000)*quantity}','{quantity}','{delivery_date}','{random.choice(status)}','{random.choice(products)[0]}','{random.choice(shops)[0]}','{order_selected[0]}')")
             except Exception as e:
@@ -223,7 +224,7 @@ def create_dummy_users(commit):
 
 if __name__ == "__main__":
     server = '155.69.100.36'
-    database = 'ss8g2DB1'
+    database = 'ss8g2DB'
     username = 'ss8g2'
     password = 'P@ssw0rd!'
 
@@ -234,11 +235,11 @@ if __name__ == "__main__":
         try:
             print("Deleting previous entries")
             cursor.execute("DELETE FROM Feedback")
+            cursor.execute("DELETE FROM PriceHistory")
             cursor.execute("DELETE FROM ComplaintsOnOrders")
             cursor.execute("DELETE FROM ComplaintsOnShops")
             cursor.execute("DELETE FROM ProductsInOrders")
             cursor.execute("DELETE FROM ProductListings")
-            cursor.execute("DELETE FROM PriceHistory")
             cursor.execute("DELETE FROM Complaints")
             cursor.execute("DELETE FROM Users")
             cursor.execute("DELETE FROM Shops")
